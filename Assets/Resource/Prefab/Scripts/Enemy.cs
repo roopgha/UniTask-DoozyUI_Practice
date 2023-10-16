@@ -10,36 +10,26 @@ public class Enemy : MonoBehaviour
     [SerializeField] private GameManager manager;
     [SerializeField] private Score scoreManager;
 
-    public float speed = 1;
+    private float speed = 3f;
 
     private void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
         EnemyAsyncCancel().Forget();
-        MoveToPlayer().Forget();
     }
 
-    private async UniTaskVoid MoveToPlayer()
+    private async void FixedUpdate()
     {
-        while (true)
+        if (GameManager.isPlayerDeath == false)
         {
-            if(GameManager.isPlayerDeath == false)
+            if (this.IsDestroyed())
             {
-                if (this.IsDestroyed())
-                {
-                    await EnemyAsyncCancel();
-                }
-
-                transform.LookAt(player.transform);
-
-                transform.position += transform.forward * speed * Time.deltaTime;
-
-                await UniTask.DelayFrame(1);
+                await EnemyAsyncCancel();
             }
-            else
-            {
-                break;
-            }
+
+            transform.LookAt(player.transform);
+
+            transform.position += transform.forward * speed * Time.deltaTime;
         }
     }
 

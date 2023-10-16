@@ -1,14 +1,9 @@
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.CompilerServices;
-using Doozy.Editor.UIManager.Windows;
 using Doozy.Runtime.UIManager.Components;
 using Doozy.Runtime.UIManager.Containers;
-using Doozy.Runtime.UIManager.Nodes.Listeners;
 using System.IO;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class GameManager : MonoBehaviour
 {
@@ -33,7 +28,7 @@ public class GameManager : MonoBehaviour
 
     private EnemySpawner spawner;
 
-    private string path { get => Application.dataPath + "/Resource/Save/Score.json"; }
+    private string path { get => Application.dataPath + "/Resources/Save/Score.json"; }
 
     public static int score, highScore;
 
@@ -45,12 +40,26 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        print(Application.dataPath);
         DontDestroyOnLoad(this);
+        if (!Directory.Exists(Application.dataPath + "/Resources/Save/"))
+        {
+            Directory.CreateDirectory(Application.dataPath + "/Resources/Save/");
+        }
+        if (!File.Exists(path))
+        {
+            Stream stream = File.Create(path);
+            stream.Close();
+        }
+
         string json = File.ReadAllText(path);
 
         UserData loadedData = JsonUtility.FromJson<UserData>(json);
 
-        highScore = loadedData.highScore;
+        if (loadedData != null)
+        {
+            highScore = loadedData.highScore;
+        }
 
         print(highScore);
     }
@@ -76,6 +85,10 @@ public class GameManager : MonoBehaviour
     public void Pause()
     {
         Time.timeScale = 0f;
+        if(isPlayerDeath)
+        {
+            deathView.Hide();
+        }
         pauseView.Show();
     }
 
@@ -86,6 +99,18 @@ public class GameManager : MonoBehaviour
 
         string json = JsonUtility.ToJson(data);
         File.WriteAllText(path, json);
+    }
+
+    public void OnClickMain()
+    {
+        UserData data = new UserData();
+        if(score > highScore)
+        {
+            data.highScore = score;
+            highScore = score;
+            string json = JsonUtility.ToJson(data);
+            File.WriteAllText (path, json);
+        }
     }
 
     public void GetViews()
@@ -122,7 +147,15 @@ public class GameManager : MonoBehaviour
     #region Btn_CallBack
     public void OnClickResumeBtn()
     {
-        Time.timeScale = 1f;
+        
+        if(isPlayerDeath)
+        {
+            deathView.Show();
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
         pauseView.Hide();
     }
 

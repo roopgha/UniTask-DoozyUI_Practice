@@ -22,19 +22,17 @@ public class EnemySpawner : MonoBehaviour
         RandomMove().Forget();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     private async UniTaskVoid EnemySpawn()
     {
         while(true)
         {
+            //적의 부모 오브젝트가 존재하고 플레이어가 죽지 않은 상황이라면?
             if(enemyParent != null && GameManager.isPlayerDeath == false)
             {
+                //자신의 위치에 적을 소환
                 GameObject enemy = Instantiate(enemyObject, spawnerTransform);
+
+                //적의 부모 오브젝트를 지정
                 enemy.transform.SetParent(enemyParent);
             }
             await UniTask.WaitForSeconds(0.7f);
